@@ -64,7 +64,7 @@ const dashboardSections = [
 export default function Dashboard() {
   return (
     <DashboardLayout
-      title="Government KPI Dashboard"
+      title="Gram Samridhi Portal"
       description="District Performance Monitoring System - Overview"
     >
       <div className="space-y-6">

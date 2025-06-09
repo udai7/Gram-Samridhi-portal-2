@@ -50,7 +50,7 @@ export function DashboardNav() {
     <nav className="flex flex-col gap-2 p-4">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gov-primary">
-          Government KPI Dashboard
+          Gram Samridhi Portal
         </h1>
         <p className="text-sm text-muted-foreground">
           District Performance Monitoring System
