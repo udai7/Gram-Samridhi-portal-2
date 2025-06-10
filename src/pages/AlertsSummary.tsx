@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,6 +24,13 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, TrendingDown, TrendingUp } from "lucide-react";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   alertsData,
   gainersDeclinersData,
   comparisonData,
@@ -43,28 +50,88 @@ ChartJS.register(
   ChartDataLabels,
 );
 
+const districts = [
+  "All Districts",
+  "West",
+  "North",
+  "Gomati",
+  "Dhalai",
+  "South",
+  "Sepahijala",
+  "Khowai",
+  "Unakoti",
+];
+
+const months = [
+  { value: "jan2025", label: "January 2025" },
+  { value: "feb2025", label: "February 2025" },
+  { value: "mar2025", label: "March 2025" },
+  { value: "apr2025", label: "April 2025" },
+  { value: "may2025", label: "May 2025" },
+];
+
 export function GainersDeclinersChart() {
+  const [currentMonth, setCurrentMonth] = useState("may2025");
+  const [previousMonth, setPreviousMonth] = useState("apr2025");
+
+  // Calculate rank changes between selected months
+  const calculateRankChanges = () => {
+    const currentMonthData = comparisonData.map((district) => ({
+      district: district.district,
+      rank: district[currentMonth as keyof typeof district],
+    }));
+
+    const previousMonthData = comparisonData.map((district) => ({
+      district: district.district,
+      rank: district[previousMonth as keyof typeof district],
+    }));
+
+    // Sort by rank for both months
+    currentMonthData.sort((a, b) => a.rank - b.rank);
+    previousMonthData.sort((a, b) => a.rank - b.rank);
+
+    // Calculate rank changes
+    return currentMonthData
+      .map((current) => {
+        const previous = previousMonthData.find(
+          (p) => p.district === current.district,
+        );
+        const previousRank = previousMonthData.indexOf(previous!);
+        const currentRank = currentMonthData.indexOf(current);
+        const change = previousRank - currentRank;
+
+        return {
+          district: current.district,
+          change,
+          type: change > 0 ? "Gainer" : change < 0 ? "Decliner" : "No Change",
+        };
+      })
+      .sort((a, b) => b.change - a.change); // Sort by change in descending order
+  };
+
+  const rankChanges = calculateRankChanges();
+
   const chartData = {
-    labels: gainersDeclinersData.map((item) => item.district),
+    labels: rankChanges.map((item) => item.district),
     datasets: [
       {
         label: "Rank Change",
-        data: gainersDeclinersData.map((item) => item.change),
-        backgroundColor: gainersDeclinersData.map((item) =>
+        data: rankChanges.map((item) => item.change),
+        backgroundColor: rankChanges.map((item) =>
           item.change > 0 ? "#22c55e" : item.change < 0 ? "#ef4444" : "#d1d5db",
         ),
         borderRadius: 0,
         barPercentage: 1,
         categoryPercentage: 1,
-        barThickness: 44, // <<-- THICK bars, adjust as needed (40-60 looks great)
+        barThickness: 44,
         maxBarThickness: 60,
         minBarLength: 2,
       },
     ],
   };
 
-  const minChange = Math.min(0, ...gainersDeclinersData.map((d) => d.change));
-  const maxChange = Math.max(0, ...gainersDeclinersData.map((d) => d.change));
+  const minChange = Math.min(0, ...rankChanges.map((d) => d.change));
+  const maxChange = Math.max(0, ...rankChanges.map((d) => d.change));
 
   const options = {
     indexAxis: "y",
@@ -124,7 +191,6 @@ export function GainersDeclinersChart() {
       y: {
         grid: { display: false },
         ticks: {
-          font: { size: 16 },
           autoSkip: false,
           maxRotation: 0,
         },
@@ -168,18 +234,59 @@ export function GainersDeclinersChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top Gainers / Decliners (All Districts)</CardTitle>
-        <CardDescription>
-          District rank movement: Top gainers & decliners (Jan–May 2025)
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Top Gainers / Decliners (All Districts)</CardTitle>
+            <CardDescription>
+              District rank changes between selected months
+            </CardDescription>
+          </div>
+          <div className="flex gap-4">
+            <Select value={previousMonth} onValueChange={setPreviousMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select previous month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={currentMonth} onValueChange={setCurrentMonth}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select current month" />
+              </SelectTrigger>
+              <SelectContent>
+                {months.map((month) => (
+                  <SelectItem key={month.value} value={month.value}>
+                    {month.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div style={{ width: "100%", height: "420px" }}>
-          <Bar
-            data={chartData}
-            options={options}
-            plugins={[ChartDataLabels, zeroLinePlugin]}
-          />
+        <div style={{ width: "100%", height: "400px" }}>
+          <Bar data={chartData} options={options} plugins={[zeroLinePlugin]} />
+        </div>
+
+        <div className="mt-4 flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-green-500 rounded"></div>
+            <span>Gainers (↑)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-500 rounded"></div>
+            <span>Decliners (↓)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-400 rounded"></div>
+            <span>No Change</span>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -187,22 +294,29 @@ export function GainersDeclinersChart() {
 }
 
 export default function AlertsSummary() {
-  const criticalAlerts = alertsData.filter((alert) => alert.value < 40);
-  const warningAlerts = alertsData.filter(
+  const [selectedDistrict, setSelectedDistrict] = useState("All Districts");
+
+  const filteredAlerts =
+    selectedDistrict === "All Districts"
+      ? alertsData
+      : alertsData.filter((alert) => alert.district === selectedDistrict);
+
+  const criticalAlerts = filteredAlerts.filter((alert) => alert.value < 40);
+  const warningAlerts = filteredAlerts.filter(
     (alert) => alert.value >= 40 && alert.value < alert.threshold,
   );
 
   // Prepare data for Chart.js Alert System Panel
   const alertChartData = {
-    labels: alertsData.map((item) => item.kpi),
+    labels: filteredAlerts.map((item) => item.kpi),
     datasets: [
       {
         label: "Performance (%)",
-        data: alertsData.map((item) => item.value),
-        backgroundColor: alertsData.map((item) =>
+        data: filteredAlerts.map((item) => item.value),
+        backgroundColor: filteredAlerts.map((item) =>
           item.value < 40 ? "#dc2626" : "#eab308",
         ),
-        borderColor: alertsData.map((item) =>
+        borderColor: filteredAlerts.map((item) =>
           item.value < 40 ? "#dc2626" : "#eab308",
         ),
         borderWidth: 1,
@@ -287,7 +401,7 @@ export default function AlertsSummary() {
       description="Monitor underperforming KPIs and view performance summaries"
     >
       <div className="space-y-6">
-        {/* Alert Summary Cards */}
+        {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6">
@@ -316,7 +430,9 @@ export default function AlertsSummary() {
                   <p className="text-2xl font-bold text-yellow-700">
                     {warningAlerts.length}
                   </p>
-                  <p className="text-xs text-yellow-600">Below 50% threshold</p>
+                  <p className="text-xs text-yellow-600">
+                    Between 40-49% threshold
+                  </p>
                 </div>
                 <TrendingDown className="h-8 w-8 text-yellow-600" />
               </div>
@@ -330,8 +446,14 @@ export default function AlertsSummary() {
                   <p className="text-sm font-medium text-green-600">
                     Total KPIs Monitored
                   </p>
-                  <p className="text-2xl font-bold text-green-700">24</p>
-                  <p className="text-xs text-green-600">Across all districts</p>
+                  <p className="text-2xl font-bold text-green-700">
+                    {filteredAlerts.length}
+                  </p>
+                  <p className="text-xs text-green-600">
+                    {selectedDistrict === "All Districts"
+                      ? "Across all districts"
+                      : `In ${selectedDistrict} district`}
+                  </p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-green-600" />
               </div>
@@ -353,13 +475,32 @@ export default function AlertsSummary() {
         {/* Alert System Panel with Chart.js */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              🚨 Alert System Panel – Underperforming KPIs by District
-              (Threshold &lt; 50%)
-            </CardTitle>
-            <CardDescription>
-              KPIs below 50% threshold requiring attention
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>
+                  🚨 Alert System Panel – Underperforming KPIs by District
+                  (Threshold &lt; 50%)
+                </CardTitle>
+                <CardDescription>
+                  KPIs below 50% threshold requiring attention
+                </CardDescription>
+              </div>
+              <Select
+                value={selectedDistrict}
+                onValueChange={setSelectedDistrict}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <div style={{ width: "100%", height: "400px" }}>
@@ -380,17 +521,7 @@ export default function AlertsSummary() {
         </Card>
 
         {/* Top Gainers/Decliners - Chart.js implementation */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Gainers / Decliners (All Districts)</CardTitle>
-            <CardDescription>
-              District rank movement: Top gainers & decliners (Jan-May 2025)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <GainersDeclinersChart />
-          </CardContent>
-        </Card>
+        <GainersDeclinersChart />
 
         {/* Performance Summary Pie Chart */}
         <PieChartSummary />
@@ -405,7 +536,7 @@ export default function AlertsSummary() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {alertsData.map((alert, index) => (
+              {filteredAlerts.map((alert, index) => (
                 <div
                   key={index}
                   className={`flex items-center justify-between p-4 rounded-lg border ${

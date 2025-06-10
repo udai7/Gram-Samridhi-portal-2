@@ -15,6 +15,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { departmentData, kpiDetailData } from "@/data/mockData";
 import {
@@ -22,8 +29,20 @@ import {
   getDepartmentColor,
   getStatusColor,
 } from "@/lib/chartColors";
+import { useState } from "react";
+
+const months = [
+  { value: "jan2025", label: "January 2025" },
+  { value: "feb2025", label: "February 2025" },
+  { value: "mar2025", label: "March 2025" },
+  { value: "apr2025", label: "April 2025" },
+  { value: "may2025", label: "May 2025" },
+];
 
 export default function DepartmentAnalysis() {
+  const [currentMonth, setCurrentMonth] = useState("may2025");
+  const [previousMonth, setPreviousMonth] = useState("apr2025");
+
   const topDepartments = departmentData.filter((d) => d.status === "High");
   const needsAttention = departmentData.filter((d) => d.status === "Low");
 
@@ -54,7 +73,8 @@ export default function DepartmentAnalysis() {
                     <div>
                       <p className="font-medium">{dept.department}</p>
                       <p className="text-sm text-gray-600">
-                        Current: {dept.current}%, Previous: {dept.previous}%
+                        Current: {dept[currentMonth as keyof typeof dept]}%,
+                        Previous: {dept[previousMonth as keyof typeof dept]}%
                       </p>
                     </div>
                     <Badge
@@ -91,7 +111,8 @@ export default function DepartmentAnalysis() {
                     <div>
                       <p className="font-medium">{dept.department}</p>
                       <p className="text-sm text-gray-600">
-                        Current: {dept.current}%, Previous: {dept.previous}%
+                        Current: {dept[currentMonth as keyof typeof dept]}%,
+                        Previous: {dept[previousMonth as keyof typeof dept]}%
                       </p>
                     </div>
                     <Badge variant="destructive">Action Required</Badge>
@@ -105,12 +126,42 @@ export default function DepartmentAnalysis() {
         {/* Department Comparison Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              Current vs. Previous Month Department Comparison Panel
-            </CardTitle>
-            <CardDescription>
-              (1 District - All KPIs - All Departments)
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>
+                  Current vs. Previous Month Department Comparison Panel
+                </CardTitle>
+                <CardDescription>
+                  (1 District - All KPIs - All Departments)
+                </CardDescription>
+              </div>
+              <div className="flex gap-4">
+                <Select value={previousMonth} onValueChange={setPreviousMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select previous month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={currentMonth} onValueChange={setCurrentMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select current month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
@@ -131,13 +182,13 @@ export default function DepartmentAnalysis() {
                 />
                 <Tooltip />
                 <Bar
-                  dataKey="previous"
+                  dataKey={previousMonth}
                   fill={CHART_COLORS.charts.trends.previous}
                   name="Previous Month"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
-                  dataKey="current"
+                  dataKey={currentMonth}
                   fill={CHART_COLORS.charts.trends.current}
                   name="Current Month"
                   radius={[4, 4, 0, 0]}

@@ -17,13 +17,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   comparisonData,
   districtVsTopPerformerData,
   districtVsStateData,
 } from "@/data/mockData";
 import { CHART_COLORS } from "@/lib/chartColors";
+import { useState } from "react";
+
+const months = [
+  { value: "jan2025", label: "January 2025" },
+  { value: "feb2025", label: "February 2025" },
+  { value: "mar2025", label: "March 2025" },
+  { value: "apr2025", label: "April 2025" },
+  { value: "may2025", label: "May 2025" },
+];
 
 export default function KPIComparisons() {
+  const [currentMonth, setCurrentMonth] = useState("may2025");
+  const [previousMonth, setPreviousMonth] = useState("apr2025");
+
   return (
     <DashboardLayout
       title="KPI Comparisons"
@@ -36,12 +55,43 @@ export default function KPIComparisons() {
         {/* Institutional Deliveries Comparison */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              Current vs Previous Month Comparison - Institutional Deliveries
-            </CardTitle>
-            <CardDescription>
-              All Districts - Single KPI Performance
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>
+                  Current vs Previous Month Comparison - Institutional
+                  Deliveries
+                </CardTitle>
+                <CardDescription>
+                  All Districts - Single KPI Performance
+                </CardDescription>
+              </div>
+              <div className="flex gap-4">
+                <Select value={previousMonth} onValueChange={setPreviousMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select previous month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={currentMonth} onValueChange={setCurrentMonth}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select current month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((month) => (
+                      <SelectItem key={month.value} value={month.value}>
+                        {month.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
@@ -62,13 +112,13 @@ export default function KPIComparisons() {
                 />
                 <Tooltip />
                 <Bar
-                  dataKey="april2025"
+                  dataKey={previousMonth}
                   fill={CHART_COLORS.charts.trends.previous}
                   name="Previous Month"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
-                  dataKey="may2025"
+                  dataKey={currentMonth}
                   fill={CHART_COLORS.charts.trends.current}
                   name="Current Month"
                   radius={[4, 4, 0, 0]}

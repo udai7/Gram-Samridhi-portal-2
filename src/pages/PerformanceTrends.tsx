@@ -16,12 +16,44 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { trendData, gainersDeclinersData } from "@/data/mockData";
+import {
+  trendData,
+  gainersDeclinersData,
+  allDistrictsTrendData,
+} from "@/data/mockData";
+import { useState } from "react";
+
+const districtColors = {
+  Dhalai: "#ef4444",
+  North: "#3b82f6",
+  South: "#8b5cf6",
+  West: "#10b981",
+  Khowai: "#f59e0b",
+  Unakoti: "#06b6d4",
+  Sepahijala: "#16a34a",
+  Gomati: "#6366f1",
+};
+
+const districts = Object.keys(districtColors);
 
 export default function PerformanceTrends() {
+  const [selectedDistrict, setSelectedDistrict] = useState("Dhalai");
   const gainers = gainersDeclinersData.filter((d) => d.type === "Gainer");
   const decliners = gainersDeclinersData.filter((d) => d.type === "Decliner");
+
+  // Filter trend data for selected district
+  const selectedDistrictData = allDistrictsTrendData.map((monthData) => ({
+    month: monthData.month,
+    rank: monthData[selectedDistrict as keyof typeof monthData],
+  }));
 
   return (
     <DashboardLayout
@@ -32,23 +64,43 @@ export default function PerformanceTrends() {
         {/* Single District Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              District Performance Trendline: Dhalai (Jan-May 2025)
-            </CardTitle>
-            <CardDescription>
-              Individual district rank progression over time
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>
+                  District Performance Trendline: {selectedDistrict} (Jan-May
+                  2025)
+                </CardTitle>
+                <CardDescription>
+                  Individual district rank progression over time
+                </CardDescription>
+              </div>
+              <Select
+                value={selectedDistrict}
+                onValueChange={setSelectedDistrict}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select a district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart
-                data={trendData}
+                data={selectedDistrictData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" axisLine={true} tickLine={true} />
                 <YAxis
-                  domain={[1, 4]}
+                  domain={[1, 5]}
                   label={{
                     value: "Rank (Lower is Better)",
                     angle: -90,
@@ -65,17 +117,25 @@ export default function PerformanceTrends() {
                 <Line
                   type="monotone"
                   dataKey="rank"
-                  stroke="#16a34a"
+                  stroke={
+                    districtColors[
+                      selectedDistrict as keyof typeof districtColors
+                    ]
+                  }
                   strokeWidth={3}
-                  dot={{ r: 6, fill: "#16a34a" }}
+                  dot={{
+                    r: 6,
+                    fill: districtColors[
+                      selectedDistrict as keyof typeof districtColors
+                    ],
+                  }}
                 />
               </LineChart>
             </ResponsiveContainer>
             <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded">
               <p className="text-sm text-green-800">
-                <strong>Excellent Progress:</strong> Dhalai district improved
-                from rank #4 to #1 over the 5-month period, showing consistent
-                performance enhancement.
+                <strong>Performance Analysis:</strong> {selectedDistrict}{" "}
+                district's rank progression over the 5-month period.
               </p>
             </div>
           </CardContent>

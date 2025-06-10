@@ -8,6 +8,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Card,
   CardContent,
@@ -15,24 +16,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { kpiBreakdownData } from "@/data/mockData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { monthlyKpiBreakdownData } from "@/data/mockData";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  Legend,
+  ChartDataLabels,
+);
 
-export function KPIBreakdownChart() {
+export function KPIBreakdownChart({
+  selectedMonth,
+  setSelectedMonth,
+  availableMonths,
+}: {
+  selectedMonth: string;
+  setSelectedMonth: (month: string) => void;
+  availableMonths: string[];
+}) {
+  const currentMonthData = monthlyKpiBreakdownData.find(
+    (data) => data.month === selectedMonth,
+  );
+
   // Sort data by total score (highest to lowest)
-  const sortedData = [...kpiBreakdownData].sort((a, b) => {
-    const aTotal =
-      a.agriculture + a.itInfra + a.education + a.health + a.ruralDev;
-    const bTotal =
-      b.agriculture + b.itInfra + b.education + b.health + b.ruralDev;
-    return bTotal - aTotal;
-  });
+  const sortedData = currentMonthData
+    ? [...currentMonthData.data].sort((a, b) => {
+        const aTotal =
+          a.agriculture + a.itInfra + a.education + a.health + a.ruralDev;
+        const bTotal =
+          b.agriculture + b.itInfra + b.education + b.health + b.ruralDev;
+        return bTotal - aTotal;
+      })
+    : [];
 
-  // Extract district names and create rankings
+  // Extract district names
   const districts = sortedData.map((item) => item.district);
-  const rankings = districts.map((_, index) => `#${index + 1}`);
 
   // Prepare data for Chart.js
   const chartData = {
@@ -75,7 +103,7 @@ export function KPIBreakdownChart() {
 
   const options = {
     indexAxis: "y",
-    responsive: false, // disables auto-resizing for perfect alignment
+    responsive: false,
     maintainAspectRatio: false,
     plugins: {
       legend: {
@@ -93,6 +121,27 @@ export function KPIBreakdownChart() {
         callbacks: {
           title: (context) => `District: ${context[0].label}`,
           label: (context) => `${context.dataset.label}: ${context.parsed.x}%`,
+        },
+      },
+      datalabels: {
+        display: true,
+        color: "#222",
+        anchor: "end",
+        align: "right",
+        offset: 10,
+        font: {
+          weight: "bold",
+          size: 14,
+        },
+        formatter: (value, context) => {
+          // Only show total for the last dataset in the stack
+          if (context.datasetIndex === chartData.datasets.length - 1) {
+            const total = chartData.datasets.reduce((sum, dataset) => {
+              return sum + (dataset.data[context.dataIndex] || 0);
+            }, 0);
+            return `${total.toFixed(1)}%`;
+          }
+          return "";
         },
       },
     },
@@ -121,13 +170,16 @@ export function KPIBreakdownChart() {
       y: {
         stacked: true,
         grid: { display: false },
-        ticks: { font: { size: 16 } },
+        ticks: {
+          font: { size: 16 },
+          callback: (value, index) => districts[index], // Show district names
+        },
         title: { display: false },
       },
     },
     layout: {
       padding: {
-        right: 50, // some space for hashes
+        right: 50,
         left: 10,
         top: 10,
         bottom: 10,
@@ -135,52 +187,38 @@ export function KPIBreakdownChart() {
     },
   };
 
-  // Custom plugin to draw hashes beside the end of each bar, perfectly aligned
-  const rankingPlugin = {
-    id: "rankingLabels",
-    afterDraw: (chart) => {
-      const ctx = chart.ctx;
-      const yAxis = chart.scales.y;
-      const xAxis = chart.scales.x;
-      if (!ctx || !yAxis || !xAxis) return;
-
-      // For each bar (row)
-      chartData.labels.forEach((_, index) => {
-        // Sum the values for this row across all datasets
-        let totalValue = 0;
-        chartData.datasets.forEach((ds) => {
-          totalValue += ds.data[index] || 0;
-        });
-
-        // Get the y position for this bar
-        const y = yAxis.getPixelForValue(index);
-
-        // Get the x position at the end of the stacked bar
-        const x = xAxis.getPixelForValue(totalValue);
-
-        // Draw the ranking label
-        ctx.save();
-        ctx.fillStyle = "#222";
-        ctx.font = "bold 14px Arial";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        // Add padding to the right of the bar
-        ctx.fillText(rankings[index], x + 10, y);
-        ctx.restore();
-      });
-    },
-  };
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>
-          District-wise Monthly KPI Scores for March with Rankings
-        </CardTitle>
-        <CardDescription>
-          Comprehensive view of all districts across Agriculture, DWS,
-          Education, Health, and RD departments
-        </CardDescription>
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>
+              District-wise Monthly KPI Scores for {selectedMonth}
+            </CardTitle>
+            <CardDescription>
+              Comprehensive view of all districts across Agriculture, DWS,
+              Education, Health, and RD departments
+            </CardDescription>
+          </div>
+          <div className="w-[200px]">
+            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+              <SelectTrigger className="h-9 bg-white border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-blue-500/20">
+                <SelectValue placeholder="Select month" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-gray-200 shadow-lg">
+                {availableMonths.map((month) => (
+                  <SelectItem
+                    key={month}
+                    value={month}
+                    className="hover:bg-gray-50 focus:bg-gray-50 cursor-pointer"
+                  >
+                    {month}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Horizontally scrollable chart */}
@@ -190,7 +228,7 @@ export function KPIBreakdownChart() {
               data={chartData}
               // @ts-ignore
               options={options}
-              plugins={[rankingPlugin]}
+              plugins={[ChartDataLabels]}
               height={chartHeight}
               width={1100}
             />

@@ -16,6 +16,9 @@ import {
   Building2,
   ArrowRight,
 } from "lucide-react";
+import { DistrictRankingChart } from "@/components/charts/DistrictRankingChart";
+import { KPIHeatMap } from "@/components/charts/KPIHeatMap";
+import { useState } from "react";
 
 const dashboardSections = [
   {
@@ -62,10 +65,13 @@ const dashboardSections = [
 ];
 
 export default function Dashboard() {
+  const [selectedMonth, setSelectedMonth] = useState("March");
+  const availableMonths = ["January", "February", "March", "April", "May"];
+
   return (
     <DashboardLayout
-      title="Gram Samridhi Portal"
-      description="District Performance Monitoring System - Overview"
+      title="Dashboard"
+      description="Overview of district performance and key metrics"
     >
       <div className="space-y-6">
         {/* Key Metrics */}
@@ -125,88 +131,61 @@ export default function Dashboard() {
                   <p className="text-sm font-medium text-gray-600">
                     Departments
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">6</p>
+                  <p className="text-2xl font-bold text-orange-600">6</p>
                 </div>
-                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-4 w-4 text-purple-600" />
+                <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-orange-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Main Charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <DistrictRankingChart
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            availableMonths={availableMonths}
+          />
+          <KPIHeatMap showDropdowns={false} />
+        </div>
+
         {/* Dashboard Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {dashboardSections.map((section) => (
-            <Card
-              key={section.href}
-              className="hover:shadow-lg transition-shadow"
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`h-10 w-10 ${section.color} rounded-lg flex items-center justify-center`}
-                    >
-                      <section.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{section.title}</CardTitle>
-                      <CardDescription className="text-sm text-gray-600 mt-1">
-                        {section.stats}
-                      </CardDescription>
-                    </div>
+            <Card key={section.title} className="flex flex-col">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`h-10 w-10 ${section.color} rounded-lg flex items-center justify-center`}
+                  >
+                    <section.icon className="h-5 w-5 text-white" />
                   </div>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link to={section.href}>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
+                  <div>
+                    <CardTitle className="text-lg">{section.title}</CardTitle>
+                    <CardDescription>{section.stats}</CardDescription>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-grow">
                 <p className="text-sm text-gray-600 mb-4">
                   {section.description}
                 </p>
-                <Button asChild className="w-full">
-                  <Link to={section.href}>View {section.title}</Link>
+                <Button
+                  asChild
+                  variant="default"
+                  className="bg-gray-900 hover:bg-gray-800 text-white whitespace-nowrap w-full"
+                >
+                  <Link to={section.href}>
+                    View {section.title}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
-
-        {/* Quick Stats */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Overview</CardTitle>
-            <CardDescription>
-              Latest performance statistics across all districts
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-2">3</div>
-                <div className="text-sm text-gray-600">
-                  Districts with High Performance (≥80%)
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-yellow-600 mb-2">3</div>
-                <div className="text-sm text-gray-600">
-                  Districts with Medium Performance (50-79%)
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-red-600 mb-2">2</div>
-                <div className="text-sm text-gray-600">
-                  Districts with Low Performance (&lt;50%)
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

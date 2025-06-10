@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { DistrictRankingChart } from "@/components/charts/DistrictRankingChart";
 import { KPIBreakdownChart } from "@/components/charts/KPIBreakdownChart";
@@ -9,12 +10,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { districtRankingData } from "@/data/mockData";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  districtRankingData,
+  monthlyDistrictRankingData,
+  monthlyKpiBreakdownData,
+} from "@/data/mockData";
 import { getStatusColor } from "@/lib/chartColors";
 
 export default function DistrictRankings() {
   const topPerformers = districtRankingData.slice(0, 3);
   const needsAttention = districtRankingData.filter((d) => d.status === "Low");
+
+  const [selectedMonth, setSelectedMonth] = useState("March"); // Default to March
+  const availableMonths = monthlyDistrictRankingData.map((data) => data.month);
+
+  const [selectedKpiMonth, setSelectedKpiMonth] = useState("March"); // Default to March
+  const availableKpiMonths = monthlyKpiBreakdownData.map((data) => data.month);
 
   return (
     <DashboardLayout
@@ -97,11 +115,19 @@ export default function DistrictRankings() {
 
         {/* Main Charts */}
         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
-          <DistrictRankingChart />
+          <DistrictRankingChart
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
+            availableMonths={availableMonths}
+          />
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
-          <KPIBreakdownChart />
+          <KPIBreakdownChart
+            selectedMonth={selectedKpiMonth}
+            setSelectedMonth={setSelectedKpiMonth}
+            availableMonths={availableKpiMonths}
+          />
         </div>
 
         {/* Performance Distribution */}
