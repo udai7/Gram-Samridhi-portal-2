@@ -18,7 +18,68 @@ import {
 } from "lucide-react";
 import { DistrictRankingChart } from "@/components/charts/DistrictRankingChart";
 import { KPIHeatMap } from "@/components/charts/KPIHeatMap";
+import { PerformanceTrendChart } from "@/components/charts/PerformanceTrendChart";
 import { useState } from "react";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { alertsData, departmentData } from "@/data/mockData";
+import {
+  BarChart,
+  Bar as RechartsBar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { CHART_COLORS } from "@/lib/chartColors";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels,
+);
+
+const districts = [
+  "All Districts",
+  "West",
+  "North",
+  "Gomati",
+  "Dhalai",
+  "South",
+  "Sepahijala",
+  "Khowai",
+  "Unakoti",
+];
+
+const months = [
+  { value: "jan2025", label: "January 2025" },
+  { value: "feb2025", label: "February 2025" },
+  { value: "mar2025", label: "March 2025" },
+  { value: "apr2025", label: "April 2025" },
+  { value: "may2025", label: "May 2025" },
+];
 
 const dashboardSections = [
   {
@@ -66,7 +127,109 @@ const dashboardSections = [
 
 export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState("March");
+  const [selectedDistrict, setSelectedDistrict] = useState("All Districts");
+  const [currentMonth, setCurrentMonth] = useState("may2025");
+  const [previousMonth, setPreviousMonth] = useState("apr2025");
   const availableMonths = ["January", "February", "March", "April", "May"];
+
+  const filteredAlerts =
+    selectedDistrict === "All Districts"
+      ? alertsData
+      : alertsData.filter((alert) => alert.district === selectedDistrict);
+
+  const criticalAlerts = filteredAlerts.filter((alert) => alert.value < 40);
+  const warningAlerts = filteredAlerts.filter(
+    (alert) => alert.value >= 40 && alert.value < alert.threshold,
+  );
+
+  // Prepare data for Chart.js Alert System Panel
+  const alertChartData = {
+    labels: filteredAlerts.map((item) => item.kpi),
+    datasets: [
+      {
+        label: "Performance (%)",
+        data: filteredAlerts.map((item) => item.value),
+        backgroundColor: filteredAlerts.map((item) =>
+          item.value < 40 ? "#dc2626" : "#eab308",
+        ),
+        borderColor: filteredAlerts.map((item) =>
+          item.value < 40 ? "#dc2626" : "#eab308",
+        ),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const alertChartOptions = {
+    indexAxis: "y",
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      title: {
+        display: false,
+      },
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          title: (context) => context.label,
+          label: (context) => `Performance: ${context.parsed.x}%`,
+        },
+      },
+      datalabels: {
+        anchor: "end",
+        align: "right",
+        color: "black",
+        font: {
+          weight: "bold",
+          size: 12,
+        },
+        formatter: (value) => `${value}%`,
+        offset: 8,
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        max: 100,
+        title: {
+          display: true,
+          text: "Value (%)",
+          font: {
+            size: 12,
+            weight: "bold",
+          },
+        },
+        grid: {
+          display: true,
+          color: "#e0e0e0",
+        },
+        ticks: {
+          stepSize: 20,
+        },
+      },
+      y: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 11,
+          },
+          maxRotation: 0,
+        },
+      },
+    },
+    layout: {
+      padding: {
+        right: 60,
+        left: 10,
+        top: 10,
+        bottom: 10,
+      },
+    },
+  };
 
   return (
     <DashboardLayout
@@ -150,6 +313,165 @@ export default function Dashboard() {
           />
           <KPIHeatMap showDropdowns={false} />
         </div>
+
+        {/* Additional Charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>All District Performance Trendline</CardTitle>
+              <CardDescription>
+                Highlighting Best Consistent Performer - Rank tracking over time
+                (Lower is Better)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PerformanceTrendChart />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle>
+                    Current vs. Previous Month Department Comparison Panel
+                  </CardTitle>
+                  <CardDescription>
+                    (1 District - All KPIs - All Departments)
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col gap-2 ml-4">
+                  <Select
+                    value={previousMonth}
+                    onValueChange={setPreviousMonth}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select previous month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month) => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={currentMonth} onValueChange={setCurrentMonth}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Select current month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((month) => (
+                        <SelectItem key={month.value} value={month.value}>
+                          {month.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart
+                  data={departmentData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="department" axisLine={true} tickLine={true} />
+                  <YAxis
+                    label={{
+                      value: "Average KPI Value (%)",
+                      angle: -90,
+                      position: "insideLeft",
+                    }}
+                    axisLine={true}
+                    tickLine={true}
+                  />
+                  <RechartsTooltip />
+                  <RechartsBar
+                    dataKey={previousMonth}
+                    fill={CHART_COLORS.charts.trends.previous}
+                    name="Previous Month"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <RechartsBar
+                    dataKey={currentMonth}
+                    fill={CHART_COLORS.charts.trends.current}
+                    name="Current Month"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+
+              <div className="mt-4 flex items-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-performance-high rounded"></div>
+                  <span>High (≥80%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-performance-medium rounded"></div>
+                  <span>Medium (50-79%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-performance-low rounded"></div>
+                  <span>Low (&lt;50%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-gray-400 rounded"></div>
+                  <span>Previous Month</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Alert System Panel */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>
+                  🚨 Alert System Panel – Underperforming KPIs by District
+                  (Threshold &lt; 50%)
+                </CardTitle>
+                <CardDescription>
+                  KPIs below 50% threshold requiring attention
+                </CardDescription>
+              </div>
+              <Select
+                value={selectedDistrict}
+                onValueChange={setSelectedDistrict}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select district" />
+                </SelectTrigger>
+                <SelectContent>
+                  {districts.map((district) => (
+                    <SelectItem key={district} value={district}>
+                      {district}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div style={{ width: "100%", height: "400px" }}>
+              <Bar data={alertChartData} options={alertChartOptions} />
+            </div>
+
+            <div className="mt-4 flex items-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-600 rounded"></div>
+                <span>Critical (&lt;40%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-yellow-500 rounded"></div>
+                <span>Warning (40-49%)</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Dashboard Sections */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
