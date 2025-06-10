@@ -21,11 +21,11 @@ export function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1">
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="bg-green-700 border-b border-green-700 px-6 py-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+            <h1 className="text-2xl font-bold text-white">{title}</h1>
             {description && (
-              <p className="text-sm text-gray-600 mt-1">{description}</p>
+              <p className="text-sm text-green-100 mt-1">{description}</p>
             )}
           </div>
         </header>

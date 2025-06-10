@@ -239,65 +239,63 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
+          <Card className="rounded-xl overflow-hidden">
+            <CardContent className="p-6 bg-sky-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-white">
                     Total Districts
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">8</p>
+                  <p className="text-2xl font-bold text-white">8</p>
                 </div>
-                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="h-4 w-4 text-blue-600" />
+                <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="rounded-xl overflow-hidden">
+            <CardContent className="p-6 bg-green-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-white">
                     High Performers
                   </p>
-                  <p className="text-2xl font-bold text-green-600">3</p>
+                  <p className="text-2xl font-bold text-white">3</p>
                 </div>
-                <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="rounded-xl overflow-hidden">
+            <CardContent className="p-6 bg-red-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-white">
                     Active Alerts
                   </p>
-                  <p className="text-2xl font-bold text-red-600">8</p>
+                  <p className="text-2xl font-bold text-white">8</p>
                 </div>
-                <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="rounded-xl overflow-hidden">
+            <CardContent className="p-6 bg-orange-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    Departments
-                  </p>
-                  <p className="text-2xl font-bold text-orange-600">6</p>
+                  <p className="text-sm font-medium text-white">Departments</p>
+                  <p className="text-2xl font-bold text-white">6</p>
                 </div>
-                <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Building2 className="h-4 w-4 text-orange-600" />
+                <div className="h-8 w-8 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardContent>
