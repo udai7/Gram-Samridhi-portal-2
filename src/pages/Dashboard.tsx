@@ -348,7 +348,7 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <CardTitle>Current Month KPI Comparison</CardTitle>
+                  <CardTitle>Current Month KPI</CardTitle>
                   <CardDescription>
                     District-wise Performance Analysis
                   </CardDescription>
@@ -376,7 +376,16 @@ export default function Dashboard() {
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="district" axisLine={true} tickLine={true} />
+                  <XAxis
+                    dataKey="district"
+                    axisLine={true}
+                    tickLine={true}
+                    tick={{ fontSize: 10 }}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
                   <YAxis
                     label={{
                       value: "Value (%)",
@@ -386,7 +395,7 @@ export default function Dashboard() {
                     axisLine={true}
                     tickLine={true}
                   />
-                  <RechartsTooltip />
+                  <Tooltip />
                   <RechartsBar
                     dataKey="value"
                     name="Current Value"
