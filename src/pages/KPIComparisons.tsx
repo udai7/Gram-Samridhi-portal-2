@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import {
   Card,
@@ -27,9 +28,10 @@ import {
   comparisonData,
   districtVsTopPerformerData,
   districtVsStateData,
+  kpiComparisonData,
 } from "@/data/mockData";
 import { CHART_COLORS } from "@/lib/chartColors";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const months = [
   { value: "jan2025", label: "January 2025" },
@@ -39,9 +41,45 @@ const months = [
   { value: "may2025", label: "May 2025" },
 ];
 
+const kpis = [
+  { value: "tax_collection", label: "Tax Collection" },
+  { value: "wages_paid", label: "Wages Paid" },
+  { value: "awc_enrolment", label: "AWC Enrolment" },
+  { value: "pmjay_cards", label: "PM-JAY Cards" },
+  { value: "child_immunization", label: "Child Immunization" },
+  { value: "institutional_deliveries", label: "Institutional Deliveries" },
+  { value: "skill_coverage", label: "Skill Coverage" },
+  { value: "income_ag", label: "Income - Ag" },
+  { value: "pmgsy_construction", label: "PMGSY Construction" },
+  { value: "pm_kisan", label: "PM-Kisan" },
+  { value: "soil_health_cards", label: "Soil Health Cards" },
+  { value: "kcc_access", label: "KCC Access" },
+];
+
 export default function KPIComparisons() {
-  const [currentMonth, setCurrentMonth] = useState("may2025");
-  const [previousMonth, setPreviousMonth] = useState("apr2025");
+  const [selectedKpi, setSelectedKpi] = useState("institutional_deliveries");
+  // const [currentMonth, setCurrentMonth] = useState("may2025"); // No longer needed
+  // const [previousMonth, setPreviousMonth] = useState("apr2025"); // No longer needed
+
+  const chartData = useMemo(() => {
+    const kpiData = kpiComparisonData[selectedKpi] || [];
+    return kpiData.map((entry) => ({
+      district: entry.district,
+      currentValue: entry.value,
+      previousValue: entry.value - entry.change, // Calculate previous value
+      status: entry.status,
+    }));
+  }, [selectedKpi]);
+
+  const getStatusColor = (value: number) => {
+    if (value >= 80) {
+      return "#22c55e"; // green-500
+    } else if (value >= 50 && value < 80) {
+      return "#eab308"; // yellow-500
+    } else {
+      return "#ef4444"; // red-500
+    }
+  };
 
   return (
     <DashboardLayout
@@ -52,40 +90,25 @@ export default function KPIComparisons() {
         {/* Heat Map */}
         <KPIHeatMap />
 
-        {/* Institutional Deliveries Comparison */}
+        {/* KPI Comparison */}
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle>
-                  Current vs Previous Month Comparison - Institutional
-                  Deliveries
-                </CardTitle>
+                <CardTitle>Current vs Previous Month Comparison</CardTitle>
                 <CardDescription>
                   All Districts - Single KPI Performance
                 </CardDescription>
               </div>
               <div className="flex gap-4">
-                <Select value={previousMonth} onValueChange={setPreviousMonth}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select previous month" />
+                <Select value={selectedKpi} onValueChange={setSelectedKpi}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Select KPI" />
                   </SelectTrigger>
                   <SelectContent>
-                    {months.map((month) => (
-                      <SelectItem key={month.value} value={month.value}>
-                        {month.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={currentMonth} onValueChange={setCurrentMonth}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select current month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {months.map((month) => (
-                      <SelectItem key={month.value} value={month.value}>
-                        {month.label}
+                    {kpis.map((kpi) => (
+                      <SelectItem key={kpi.value} value={kpi.value}>
+                        {kpi.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -96,7 +119,7 @@ export default function KPIComparisons() {
           <CardContent>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart
-                data={comparisonData}
+                data={chartData}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -112,17 +135,29 @@ export default function KPIComparisons() {
                 />
                 <Tooltip />
                 <Bar
-                  dataKey={previousMonth}
-                  fill={CHART_COLORS.charts.trends.previous}
+                  dataKey="previousValue"
                   name="Previous Month"
                   radius={[4, 4, 0, 0]}
-                />
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={getStatusColor(entry.previousValue)}
+                    />
+                  ))}
+                </Bar>
                 <Bar
-                  dataKey={currentMonth}
-                  fill={CHART_COLORS.charts.trends.current}
+                  dataKey="currentValue"
                   name="Current Month"
                   radius={[4, 4, 0, 0]}
-                />
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={getStatusColor(entry.currentValue)}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

@@ -14,6 +14,17 @@ export interface KPIData {
   itInfra: number;
 }
 
+export interface KPIDistrictData {
+  district: string;
+  value: number;
+  change: number;
+  status: "High" | "Medium" | "Low";
+}
+
+export interface KPIDataMap {
+  [key: string]: KPIDistrictData[];
+}
+
 export interface TrendData {
   month: string;
   rank: number;
@@ -1003,3 +1014,127 @@ export const monthlyKpiBreakdownData = [
     ],
   },
 ];
+
+// KPI-specific Comparison Data
+export const kpiComparisonData: KPIDataMap = {
+  tax_collection: [
+    { district: "West", value: 88, change: 3, status: "High" },
+    { district: "North", value: 79, change: -2, status: "Medium" },
+    { district: "Gomati", value: 72, change: 6, status: "Medium" },
+    { district: "Dhalai", value: 54, change: -5, status: "Low" },
+    { district: "South", value: 63, change: -1, status: "Low" },
+    { district: "Sepahijala", value: 74, change: 1, status: "Medium" },
+    { district: "Khowai", value: 76, change: 1, status: "High" },
+    { district: "Unakoti", value: 68, change: -2, status: "Medium" },
+  ],
+  wages_paid: [
+    { district: "West", value: 92, change: 4, status: "High" },
+    { district: "North", value: 85, change: 2, status: "High" },
+    { district: "Gomati", value: 78, change: 5, status: "Medium" },
+    { district: "Dhalai", value: 62, change: -3, status: "Medium" },
+    { district: "South", value: 68, change: 2, status: "Medium" },
+    { district: "Sepahijala", value: 72, change: 0, status: "Medium" },
+    { district: "Khowai", value: 82, change: 3, status: "High" },
+    { district: "Unakoti", value: 75, change: -1, status: "Medium" },
+  ],
+  awc_enrolment: [
+    { district: "West", value: 85, change: 2, status: "High" },
+    { district: "North", value: 82, change: 1, status: "High" },
+    { district: "Gomati", value: 75, change: 4, status: "Medium" },
+    { district: "Dhalai", value: 58, change: -4, status: "Low" },
+    { district: "South", value: 65, change: 0, status: "Medium" },
+    { district: "Sepahijala", value: 70, change: 2, status: "Medium" },
+    { district: "Khowai", value: 78, change: 2, status: "Medium" },
+    { district: "Unakoti", value: 72, change: -1, status: "Medium" },
+  ],
+  pmjay_cards: [
+    { district: "West", value: 90, change: 5, status: "High" },
+    { district: "North", value: 88, change: 3, status: "High" },
+    { district: "Gomati", value: 82, change: 7, status: "High" },
+    { district: "Dhalai", value: 65, change: -2, status: "Medium" },
+    { district: "South", value: 70, change: 3, status: "Medium" },
+    { district: "Sepahijala", value: 75, change: 2, status: "Medium" },
+    { district: "Khowai", value: 85, change: 4, status: "High" },
+    { district: "Unakoti", value: 78, change: 1, status: "Medium" },
+  ],
+  child_immunization: [
+    { district: "West", value: 95, change: 2, status: "High" },
+    { district: "North", value: 92, change: 1, status: "High" },
+    { district: "Gomati", value: 88, change: 3, status: "High" },
+    { district: "Dhalai", value: 75, change: -2, status: "Medium" },
+    { district: "South", value: 82, change: 2, status: "High" },
+    { district: "Sepahijala", value: 80, change: 1, status: "High" },
+    { district: "Khowai", value: 90, change: 3, status: "High" },
+    { district: "Unakoti", value: 85, change: 0, status: "High" },
+  ],
+  institutional_deliveries: [
+    { district: "West", value: 88, change: 3, status: "High" },
+    { district: "North", value: 79, change: -2, status: "Medium" },
+    { district: "Gomati", value: 72, change: 6, status: "Medium" },
+    { district: "Dhalai", value: 54, change: -5, status: "Low" },
+    { district: "South", value: 63, change: -1, status: "Low" },
+    { district: "Sepahijala", value: 74, change: 1, status: "Medium" },
+    { district: "Khowai", value: 76, change: 1, status: "High" },
+    { district: "Unakoti", value: 68, change: -2, status: "Medium" },
+  ],
+  skill_coverage: [
+    { district: "West", value: 82, change: 4, status: "High" },
+    { district: "North", value: 78, change: 2, status: "Medium" },
+    { district: "Gomati", value: 75, change: 5, status: "Medium" },
+    { district: "Dhalai", value: 58, change: -3, status: "Low" },
+    { district: "South", value: 65, change: 2, status: "Medium" },
+    { district: "Sepahijala", value: 70, change: 0, status: "Medium" },
+    { district: "Khowai", value: 80, change: 3, status: "High" },
+    { district: "Unakoti", value: 72, change: -1, status: "Medium" },
+  ],
+  income_ag: [
+    { district: "West", value: 85, change: 2, status: "High" },
+    { district: "North", value: 82, change: 1, status: "High" },
+    { district: "Gomati", value: 75, change: 4, status: "Medium" },
+    { district: "Dhalai", value: 58, change: -4, status: "Low" },
+    { district: "South", value: 65, change: 0, status: "Medium" },
+    { district: "Sepahijala", value: 70, change: 2, status: "Medium" },
+    { district: "Khowai", value: 78, change: 2, status: "Medium" },
+    { district: "Unakoti", value: 72, change: -1, status: "Medium" },
+  ],
+  pmgsy_construction: [
+    { district: "West", value: 90, change: 5, status: "High" },
+    { district: "North", value: 88, change: 3, status: "High" },
+    { district: "Gomati", value: 82, change: 7, status: "High" },
+    { district: "Dhalai", value: 65, change: -2, status: "Medium" },
+    { district: "South", value: 70, change: 3, status: "Medium" },
+    { district: "Sepahijala", value: 75, change: 2, status: "Medium" },
+    { district: "Khowai", value: 85, change: 4, status: "High" },
+    { district: "Unakoti", value: 78, change: 1, status: "Medium" },
+  ],
+  pm_kisan: [
+    { district: "West", value: 95, change: 2, status: "High" },
+    { district: "North", value: 92, change: 1, status: "High" },
+    { district: "Gomati", value: 88, change: 3, status: "High" },
+    { district: "Dhalai", value: 75, change: -2, status: "Medium" },
+    { district: "South", value: 82, change: 2, status: "High" },
+    { district: "Sepahijala", value: 80, change: 1, status: "High" },
+    { district: "Khowai", value: 90, change: 3, status: "High" },
+    { district: "Unakoti", value: 85, change: 0, status: "High" },
+  ],
+  soil_health_cards: [
+    { district: "West", value: 88, change: 3, status: "High" },
+    { district: "North", value: 79, change: -2, status: "Medium" },
+    { district: "Gomati", value: 72, change: 6, status: "Medium" },
+    { district: "Dhalai", value: 54, change: -5, status: "Low" },
+    { district: "South", value: 63, change: -1, status: "Low" },
+    { district: "Sepahijala", value: 74, change: 1, status: "Medium" },
+    { district: "Khowai", value: 76, change: 1, status: "High" },
+    { district: "Unakoti", value: 68, change: -2, status: "Medium" },
+  ],
+  kcc_access: [
+    { district: "West", value: 92, change: 4, status: "High" },
+    { district: "North", value: 85, change: 2, status: "High" },
+    { district: "Gomati", value: 78, change: 5, status: "Medium" },
+    { district: "Dhalai", value: 62, change: -3, status: "Medium" },
+    { district: "South", value: 68, change: 2, status: "Medium" },
+    { district: "Sepahijala", value: 72, change: 0, status: "Medium" },
+    { district: "Khowai", value: 82, change: 3, status: "High" },
+    { district: "Unakoti", value: 75, change: -1, status: "Medium" },
+  ],
+};

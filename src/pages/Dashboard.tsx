@@ -38,15 +38,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { alertsData, departmentData } from "@/data/mockData";
+import { alertsData, kpiComparisonData } from "@/data/mockData";
 import {
-  BarChart,
+  BarChart as RechartsBarChart,
   Bar as RechartsBar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import { CHART_COLORS } from "@/lib/chartColors";
 
@@ -79,6 +80,21 @@ const months = [
   { value: "mar2025", label: "March 2025" },
   { value: "apr2025", label: "April 2025" },
   { value: "may2025", label: "May 2025" },
+];
+
+const kpis = [
+  { value: "tax_collection", label: "Tax Collection" },
+  { value: "wages_paid", label: "Wages Paid" },
+  { value: "awc_enrolment", label: "AWC Enrolment" },
+  { value: "pmjay_cards", label: "PM-JAY Cards" },
+  { value: "child_immunization", label: "Child Immunization" },
+  { value: "institutional_deliveries", label: "Institutional Deliveries" },
+  { value: "skill_coverage", label: "Skill Coverage" },
+  { value: "income_ag", label: "Income - Ag" },
+  { value: "pmgsy_construction", label: "PMGSY Construction" },
+  { value: "pm_kisan", label: "PM-Kisan" },
+  { value: "soil_health_cards", label: "Soil Health Cards" },
+  { value: "kcc_access", label: "KCC Access" },
 ];
 
 const dashboardSections = [
@@ -128,9 +144,11 @@ const dashboardSections = [
 export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState("March");
   const [selectedDistrict, setSelectedDistrict] = useState("All Districts");
-  const [currentMonth, setCurrentMonth] = useState("may2025");
-  const [previousMonth, setPreviousMonth] = useState("apr2025");
+  const [selectedKpi, setSelectedKpi] = useState("institutional_deliveries");
   const availableMonths = ["January", "February", "March", "April", "May"];
+
+  // Get the current KPI data
+  const currentKpiData = kpiComparisonData[selectedKpi] || [];
 
   const filteredAlerts =
     selectedDistrict === "All Districts"
@@ -239,7 +257,7 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="rounded-xl overflow-hidden">
+          <Card>
             <CardContent className="p-6 bg-sky-500">
               <div className="flex items-center justify-between">
                 <div>
@@ -255,7 +273,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl overflow-hidden">
+          <Card>
             <CardContent className="p-6 bg-green-500">
               <div className="flex items-center justify-between">
                 <div>
@@ -271,7 +289,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl overflow-hidden">
+          <Card>
             <CardContent className="p-6 bg-red-500">
               <div className="flex items-center justify-between">
                 <div>
@@ -287,7 +305,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-xl overflow-hidden">
+          <Card>
             <CardContent className="p-6 bg-orange-500">
               <div className="flex items-center justify-between">
                 <div>
@@ -330,37 +348,20 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <CardTitle>
-                    Current vs. Previous Month Department Comparison Panel
-                  </CardTitle>
+                  <CardTitle>Current Month KPI Comparison</CardTitle>
                   <CardDescription>
-                    (1 District - All KPIs - All Departments)
+                    District-wise Performance Analysis
                   </CardDescription>
                 </div>
                 <div className="flex flex-col gap-2 ml-4">
-                  <Select
-                    value={previousMonth}
-                    onValueChange={setPreviousMonth}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select previous month" />
+                  <Select value={selectedKpi} onValueChange={setSelectedKpi}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select KPI" />
                     </SelectTrigger>
                     <SelectContent>
-                      {months.map((month) => (
-                        <SelectItem key={month.value} value={month.value}>
-                          {month.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={currentMonth} onValueChange={setCurrentMonth}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select current month" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {months.map((month) => (
-                        <SelectItem key={month.value} value={month.value}>
-                          {month.label}
+                      {kpis.map((kpi) => (
+                        <SelectItem key={kpi.value} value={kpi.value}>
+                          {kpi.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -370,15 +371,15 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={departmentData}
+                <RechartsBarChart
+                  data={currentKpiData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="department" axisLine={true} tickLine={true} />
+                  <XAxis dataKey="district" axisLine={true} tickLine={true} />
                   <YAxis
                     label={{
-                      value: "Average KPI Value (%)",
+                      value: "Value (%)",
                       angle: -90,
                       position: "insideLeft",
                     }}
@@ -387,18 +388,24 @@ export default function Dashboard() {
                   />
                   <RechartsTooltip />
                   <RechartsBar
-                    dataKey={previousMonth}
-                    fill={CHART_COLORS.charts.trends.previous}
-                    name="Previous Month"
+                    dataKey="value"
+                    name="Current Value"
                     radius={[4, 4, 0, 0]}
-                  />
-                  <RechartsBar
-                    dataKey={currentMonth}
-                    fill={CHART_COLORS.charts.trends.current}
-                    name="Current Month"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
+                  >
+                    {currentKpiData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.status === "High"
+                            ? "#22c55e"
+                            : entry.status === "Medium"
+                              ? "#eab308"
+                              : "#ef4444"
+                        }
+                      />
+                    ))}
+                  </RechartsBar>
+                </RechartsBarChart>
               </ResponsiveContainer>
 
               <div className="mt-4 flex items-center gap-6 text-sm">
@@ -414,12 +421,24 @@ export default function Dashboard() {
                   <div className="w-3 h-3 bg-performance-low rounded"></div>
                   <span>Low (&lt;50%)</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-400 rounded"></div>
-                  <span>Previous Month</span>
-                </div>
               </div>
             </CardContent>
+            <div className="px-6 pb-6">
+              <div className="border border-green-300 rounded-lg bg-green-50 p-4">
+                <div className="text-sm text-muted-foreground">
+                  <p>
+                    <span className="font-medium text-foreground">
+                      North Tripura
+                    </span>{" "}
+                    has shown significant improvement in institutional
+                    deliveries and child immunization rates, while{" "}
+                    <span className="font-medium text-foreground">Dhalai</span>{" "}
+                    leads in PM-JAY card distribution and soil health card
+                    coverage.
+                  </p>
+                </div>
+              </div>
+            </div>
           </Card>
         </div>
 
